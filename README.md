@@ -6,7 +6,7 @@ When you open the LinkedIn feed and start interacting with a comment box, the ex
 
 ## Current Status
 
-This project is an early prototype. The extension UI is wired into LinkedIn, but comment generation currently returns a placeholder response from `content.js`.
+This project is an early prototype. The extension UI is wired into LinkedIn, but comment generation currently returns a placeholder response from `src/comment-generator.ts`.
 
 ## Features
 
@@ -21,23 +21,45 @@ This project is an early prototype. The extension UI is wired into LinkedIn, but
 
 ```text
 .
-├── manifest.json
-├── content.js
-└── images/
-    ├── icon-16.png
-    ├── icon-32.png
-    ├── icon-48.png
-    ├── icon-128.png
-    └── ai-comment-medium.svg
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── src/
+│   ├── comment-button.ts
+│   ├── comment-generator.ts
+│   ├── content-main.ts
+│   ├── linkedin-dom.ts
+│   └── manifest.ts
+└── public/
+    └── images/
+        ├── icon-16.png
+        ├── icon-32.png
+        ├── icon-48.png
+        ├── icon-128.png
+        └── ai-comment-medium.svg
 ```
 
 ## Installation
 
+Install dependencies:
+
+```bash
+npm install
+```
+
+Build the extension:
+
+```bash
+npm run build
+```
+
 1. Open Chrome and go to `chrome://extensions`.
 2. Enable `Developer mode`.
 3. Click `Load unpacked`.
-4. Select this project directory.
+4. Select the generated `dist` directory.
 5. Open `https://www.linkedin.com/feed/`.
+
+If Chrome shows an error for `service-worker-loader.js` or `http://localhost:5173/@vite/env`, rebuild with `npm run build` and reload the `dist` directory. Those files are only expected while using the Vite dev server.
 
 ## Usage
 
@@ -48,17 +70,25 @@ This project is an early prototype. The extension UI is wired into LinkedIn, but
 
 ## Development
 
+Run the Vite dev server:
+
+```bash
+npm run dev
+```
+
+Keep that terminal process running while the extension is loaded. CRXJS development output references the local Vite server for hot reload, so stopping the dev server can cause Chrome to report localhost or service worker loading errors.
+
 After editing the extension:
 
 1. Go back to `chrome://extensions`.
 2. Click the reload button for `LinkedIn Comment Generator`.
 3. Refresh the LinkedIn feed tab.
 
-The main extension logic lives in `content.js`.
+The extension is built with TypeScript, Vite, and CRXJS. The typed manifest lives in `src/manifest.ts`, and the content script entry point is `src/content-main.ts`.
 
 ## Important Notes
 
-- The extension depends on LinkedIn's current DOM structure. LinkedIn UI changes may require selector updates in `content.js`.
+- The extension depends on LinkedIn's current DOM structure. LinkedIn UI changes may require selector updates in `src/linkedin-dom.ts` or `src/content-main.ts`.
 - The current `generateComment` implementation returns a fake placeholder comment.
 - No external API key or backend is configured yet.
 - Suggested comments should always be reviewed before posting.

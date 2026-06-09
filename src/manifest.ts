@@ -1,0 +1,20 @@
+import { defineManifest } from '@crxjs/vite-plugin';
+
+export default defineManifest({
+  version: '1.0',
+  manifest_version: 3,
+  name: 'LinkedIn Comment Generator',
+  description: 'Generates a comment for a LinkedIn post based on the content of the post.',
+  icons: {
+    16: 'images/icon-16.png',
+    32: 'images/icon-32.png',
+    48: 'images/icon-48.png',
+    128: 'images/icon-128.png',
+  },
+  content_scripts: [
+    {
+      matches: ['*://www.linkedin.com/feed/*'],
+      js: ['src/content-main.ts'],
+    },
+  ],
+});
