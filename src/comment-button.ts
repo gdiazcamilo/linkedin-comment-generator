@@ -1,5 +1,21 @@
 import { generateComment } from './comment-generator';
-import { extractPostContent, findPostContainerFromChild, insertComment } from './linkedin-dom';
+import { findPostContentElementFromChild, getReferencedCommentContentElement, getEditableCommentParagraph } from './linkedin-dom';
+
+function extractTextContent(postContentElement: HTMLElement): string | null {
+  return postContentElement?.innerText ?? null;
+}
+
+function insertComment(emojiButton: HTMLElement, commentText: string): boolean {
+  const paragraph = getEditableCommentParagraph(emojiButton);
+
+  if (!paragraph) {
+    console.warn('Could not find editable comment paragraph for the clicked generate comment button');
+    return false;
+  }
+
+  paragraph.append(commentText);
+  return true;
+}
 
 export function insertGenerateCommentButton(buttonsContainer: HTMLElement): void {
   if (buttonsContainer.querySelector('.generate-comment-button')) {
@@ -28,19 +44,26 @@ export function insertGenerateCommentButton(buttonsContainer: HTMLElement): void
 }
 
 function generateCommentClickHandler(event: Event): void {
-  const postContainer = findPostContainerFromChild(event.target);
+  const emojiButton = event.currentTarget as HTMLElement;
+  const postContentElement = findPostContentElementFromChild(emojiButton);
 
-  if (!postContainer) {
+  if (!postContentElement) {
+    console.warn('Could not find post content element for the clicked generate comment button');
     return;
   }
 
-  const postContentText = extractPostContent(postContainer);
-
+  const referencedCommentContentElement = getReferencedCommentContentElement(emojiButton);
+  const referencedCommentText = referencedCommentContentElement ? extractTextContent(referencedCommentContentElement) : null;
+  const postContentText = extractTextContent(postContentElement);
   if (!postContentText) {
+    console.warn('Couldn\'t find text content from the post content element');
     return;
   }
 
-  generateComment(postContentText).then((comment) => {
-    insertComment(postContainer, comment);
+  console.log("POST: ", postContentText);
+  console.log("REF COMMENT: ", referencedCommentText);
+
+  generateComment(postContentText, referencedCommentText).then((comment) => {
+    insertComment(emojiButton, comment);
   });
 }
