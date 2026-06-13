@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>LinkedIn Comment Generator</title>
+    <script type="module" src="../src/options.ts"></script>
+  </head>
+  <body>
+    <div id="warning">
+      <p>
+        Configure the settings below.
+      </p>
+    </div>
+    <form id="settings-form">
+      <h1>Settings</h1>
+      <fieldset>
+        <h2>OpenAI API Key</h2>
+        <input id="openai-api-key" type="password" name="openai-api-key" placeholder="Enter your OpenAI API key" />
+      </fieldset>
+      <button type="button" id="save-button">Save & Enable</button>
+    </form>
+  </body>
+</html>

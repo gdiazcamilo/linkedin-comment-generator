@@ -11,10 +11,19 @@ export default defineManifest({
     48: 'images/icon-48.png',
     128: 'images/icon-128.png',
   },
+  action: {},
+  background: {
+    service_worker: 'src/service-worker.ts',
+  },
   content_scripts: [
     {
       matches: ['*://www.linkedin.com/feed/*'],
       js: ['src/content-main.ts'],
     },
   ],
+  options_ui: {
+    page: "pages/options.html",
+    open_in_tab: true,
+  },
+  permissions: ['storage'],
 });
