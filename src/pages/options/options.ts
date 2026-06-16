@@ -1,4 +1,4 @@
-import { saveOpenAIApiKey } from '../../src/storage';
+import { saveOpenAIApiKey } from '../../storage';
 
 const form = document.getElementById('settings-form') as HTMLFormElement | null;
 const saveButton = document.getElementById('save-button');
