@@ -17,5 +17,6 @@ export function saveOpenAIApiKey(apiKey: string, callback?: (success: boolean, e
 }
 
 export async function getOpenAIApiKey(): Promise<string | null> {
-    return await chrome.storage.local.get(OPEN_AI_API_KEY_NAME);
+    const result = await chrome.storage.local.get(OPEN_AI_API_KEY_NAME);
+    return result ? result.openaiApiKey : null;
 }
