@@ -99,3 +99,7 @@ The extension is built with TypeScript, Vite, and CRXJS. The typed manifest live
 - Add error handling for missing post text or unavailable comment boxes.
 - Add configuration for tone, length, or comment style.
 - Add tests or a manual QA checklist for LinkedIn DOM changes.
+
+
+## Limitations
+- Only the text in posts is supported.
