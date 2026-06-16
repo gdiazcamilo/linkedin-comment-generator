@@ -1,3 +1,4 @@
+
 import { generateComment } from './comment-generator';
 import { findPostContentElementFromChild, getReferencedCommentContentElement, getEditableCommentParagraph } from './linkedin-dom';
 
@@ -63,6 +64,7 @@ function generateCommentClickHandler(event: Event): void {
   console.log("POST: ", postContentText);
   console.log("REF COMMENT: ", referencedCommentText);
 
+  //TODO: put an loading indicator while comment is being generated
   generateComment(postContentText, referencedCommentText).then((comment) => {
     insertComment(emojiButton, comment);
   });

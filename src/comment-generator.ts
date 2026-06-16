@@ -1,13 +1,12 @@
-import { AIClient } from './ai-clients/ai-client';
-import { OpenAIClient } from './ai-clients/openai/openai-client';
 
-export async function generateComment(_postContent: string, _referencedCommentText: string | null): Promise<string> {
-  const aiClient = await getAIClient();
-  return await aiClient.generate_comment(_postContent, _referencedCommentText);
+
+export async function generateComment(postContentText: string, referencedCommentText: string | null): Promise<string> {
+    // TODO: the input will be send ultimately to openai api. validate the it is not malicious.
+    const generatedComment = await chrome.runtime.sendMessage({
+        type: "SUGGEST_COMMENT",
+        postContentText,
+        referencedCommentText
+    });
+    return generatedComment;
 }
 
-
-async function getAIClient(): Promise<AIClient> {
-  // In the future, we can add logic here to return different AI clients based on user settings (e.g. OpenAI, Claude, Gemini, etc.).
-  return await OpenAIClient.create();
-}
