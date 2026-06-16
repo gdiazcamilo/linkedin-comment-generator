@@ -26,4 +26,9 @@ export default defineManifest({
     open_in_tab: true,
   },
   permissions: ['storage'],
+  content_security_policy: { 
+    // CSP manage what this extension is allowed to execute. 
+    // The default for manifest V3 are good enough, but I make it explicit here and harden it a bit
+    extension_pages: "script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';"
+  }
 });
