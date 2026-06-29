@@ -17,7 +17,7 @@ export default defineManifest({
   },
   content_scripts: [
     {
-      matches: ['*://www.linkedin.com/feed/*'],
+      matches: ['*://www.linkedin.com/*'],
       js: ['src/content-main.ts'],
     },
   ],
