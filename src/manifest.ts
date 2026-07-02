@@ -30,5 +30,11 @@ export default defineManifest({
     // CSP manage what this extension is allowed to execute. 
     // The default for manifest V3 are good enough, but I make it explicit here and harden it a bit
     extension_pages: "script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';"
-  }
+  },
+  web_accessible_resources: [
+    {
+      resources: ['images/conversation_tones/*.png'],
+      matches: ['*://www.linkedin.com/*']
+    }
+  ]
 });
