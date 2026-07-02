@@ -1,6 +1,8 @@
 
 import { generateComment } from './comment-generator';
 import { findPostContentElementFromChild, getReferencedCommentContentElement, getEditableCommentParagraph } from './linkedin-dom';
+import { AIGenBox } from './ai-gen-box'
+import { computePosition, autoUpdate } from '@floating-ui/dom';
 
 function extractTextContent(postContentElement: HTMLElement): string | null {
   return postContentElement?.innerText ?? null;
@@ -41,11 +43,34 @@ export function insertGenerateCommentButton(buttonsContainer: HTMLElement): void
                   </button>`;
 
   buttonsContainer.insertAdjacentHTML('beforeend', button);
-  buttonsContainer.querySelector('.generate-comment-button')?.addEventListener('click', generateCommentClickHandler);
+  
+  const buttonDOMElem = buttonsContainer.querySelector('.generate-comment-button') as HTMLButtonElement;
+  buttonDOMElem.addEventListener('click', generateCommentClickHandler);
+
 }
 
 function generateCommentClickHandler(event: Event): void {
   const emojiButton = event.currentTarget as HTMLElement;
+  const aiGenBox = AIGenBox.getInstance();
+  if(Object.hasOwn(aiGenBox, "floatingUiCleanup")) {
+    (aiGenBox as any).floatingUiCleanup();
+  }
+
+  aiGenBox.show();
+
+  const cleanup = autoUpdate(emojiButton, aiGenBox.getDOMElement(), () => {
+    computePosition(emojiButton, aiGenBox.getDOMElement()).then(({x, y}) => {
+      Object.assign(aiGenBox.getDOMElement().style, {
+        left: `${x}px`,
+        top: `${y}px`
+      });
+    });
+  });
+
+  Object.assign(aiGenBox, {
+    floatingUiCleanup: cleanup
+  });
+
   const postContentElement = findPostContentElementFromChild(emojiButton);
 
   if (!postContentElement) {
