@@ -1,6 +1,8 @@
 import { AIClient } from "../ai-client";
 import { getOpenAIApiKey } from "../../storage";
 import OpenAI from "openai";
+import { ConversationTone } from "../../enums";
+import { build as build_prompt } from "../openai/prompts/reply-prompt"
 
 export class OpenAIClient implements AIClient {
     private openai: OpenAI;
@@ -18,11 +20,17 @@ export class OpenAIClient implements AIClient {
         return new OpenAIClient(apiKey);
     }
 
-    async generate_comment(post_content: string, reply_to: string | null): Promise<string> {
+    async generate_comment(post_content: string, reply_to: string | null, tone: ConversationTone| null): Promise<string> {
+        const responseParams = build_prompt(post_content, reply_to, tone);
+        return "Lorem ipsum..... do not waste prompts while testing";
+        console.log(responseParams);
+
         const response = await this.openai.responses.create({
             model: "gpt-5-nano-2025-08-07",
-            input: "Write a one-sentence bedtime story about a unicorn."
+            ...responseParams
         });
+
+        console.log(response);
 
         return response.output_text;
     }
