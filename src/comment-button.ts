@@ -2,7 +2,7 @@
 import { generateComment } from './comment-generator';
 import { findPostContentElementFromChild, getReferencedCommentContentElement, getEditableCommentParagraph } from './linkedin-dom';
 import { AIGenBox } from './ai-gen-box'
-import { computePosition, autoUpdate } from '@floating-ui/dom';
+import { computePosition, autoUpdate, shift, hide } from '@floating-ui/dom';
 
 function extractTextContent(postContentElement: HTMLElement): string | null {
   return postContentElement?.innerText ?? null;
@@ -53,23 +53,37 @@ function generateCommentClickHandler(event: Event): void {
   const emojiButton = event.currentTarget as HTMLElement;
   const aiGenBox = AIGenBox.getInstance();
   if(Object.hasOwn(aiGenBox, "floatingUiCleanup")) {
-    (aiGenBox as any).floatingUiCleanup();
+    const temp = (aiGenBox as any);
+    if(typeof(temp.floatingUiCleanup) === "function") {
+      temp.floatingUiCleanup();
+    }
+
+    
   }
 
   aiGenBox.show();
-
+  
   const cleanup = autoUpdate(emojiButton, aiGenBox.getDOMElement(), () => {
-    computePosition(emojiButton, aiGenBox.getDOMElement()).then(({x, y}) => {
+    computePosition(emojiButton, aiGenBox.getDOMElement(), {
+      middleware: [shift(), hide()]
+    }).then(({x, y, middlewareData: {hide}}) => {
       Object.assign(aiGenBox.getDOMElement().style, {
         left: `${x}px`,
         top: `${y}px`
       });
+
+      if(hide?.referenceHidden) {
+        aiGenBox.hide();
+      }
     });
   });
-
+  
+  //TODO: maybe is cleaner to pass the cleanup function to the hideAIGenBox function
   Object.assign(aiGenBox, {
     floatingUiCleanup: cleanup
   });
+
+  document.addEventListener('click', hideAIGenBox);
 
   const postContentElement = findPostContentElementFromChild(emojiButton);
 
@@ -86,11 +100,35 @@ function generateCommentClickHandler(event: Event): void {
     return;
   }
 
-  console.log("POST: ", postContentText);
-  console.log("REF COMMENT: ", referencedCommentText);
+  // console.log("POST: ", postContentText);
+  // console.log("REF COMMENT: ", referencedCommentText);
 
   //TODO: put an loading indicator while comment is being generated
-  generateComment(postContentText, referencedCommentText).then((comment) => {
-    insertComment(emojiButton, comment);
-  });
+  // generateComment(postContentText, referencedCommentText).then((comment) => {
+  //   insertComment(emojiButton, comment);
+  // });
+}
+
+
+const hideAIGenBox = (event: Event) => {
+  console.log("trigger hideAIGenBox");
+  const isHtmlElement = event.target instanceof HTMLElement;
+  if (!isHtmlElement)
+    return;
+  
+  // Don't hide if clicking inside the box itself or in the button that will display the box.
+  const target = event.target as HTMLElement
+  if (target.closest('div.ai-gen-box-container'))
+    return;
+
+  if (target.classList.contains("generate-comment-button"))
+    return;
+
+  if (target.closest(".generate-comment-button"))
+    return;
+
+  AIGenBox.getInstance().hide();
+
+  document.removeEventListener('click', hideAIGenBox);
+
 }

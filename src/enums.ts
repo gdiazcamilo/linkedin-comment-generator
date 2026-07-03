@@ -12,5 +12,5 @@ export enum ConversationTone {
     Vulnerable,
     Professional,
     Critical,
-    Bold
+    Bold,
 }

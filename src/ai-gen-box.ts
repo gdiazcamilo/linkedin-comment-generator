@@ -31,20 +31,41 @@ export class AIGenBox {
 
         Object.assign(container.style, {
             position: 'absolute',
-            width: 'max-content',
+            display: 'none',
+            maxWidth: '65vw',
             zIndex: 999,
             top: '0px',
             left: '0px',
             backgroundColor: 'white',
             padding: '5px 8px',
             borderRadius: '30px',
+            boxShadow: '0px 1px 5px rgba(0, 0, 0, 0.2)',
         });
 
         document.body.appendChild(container);
-
+        this.injectCss();
+        
         this.domElement = container;
-        console.log(this.domElement);
+        
         return this.domElement;
+    }
+
+    injectCss() {
+        const style = document.createElement('style');
+        style.id = "lcg-aiboxgen-styles"
+
+        style.textContent = `
+            .lcg-tone-container:hover img {
+                border: solid;
+                border-radius: 30px;
+                border-color: #f7cf3db5;
+                transform: scale(1.2);
+            }
+        `;
+
+        document.head.appendChild(style);
+
+
     }
 
     show() {
@@ -57,18 +78,28 @@ export class AIGenBox {
             this.domElement.style.display = 'none';
     }
 
+    isVisible() {
+        return this.domElement?.style.display != 'none';
+    }
+
     private renderConversationTonesIcons() : HTMLElement {
         const allIconsContainer = document.createElement('div');
+        Object.assign(allIconsContainer.style, {
+            display: 'flex',
+            flexWrap: 'wrap'        
+        });
 
-        console.log(Object.values(ConversationTone));
         const tones = Object.values(ConversationTone).filter(t => typeof(t) === "string").map(t => t.toString());
-        console.log(tones);
         for(const tone of tones) {
             const iconContainer = document.createElement('div');
+            iconContainer.classList.add('lcg-tone-container')
             Object.assign(iconContainer.style, {
-                position: 'relative',
-                display: 'inline-block',
-                margin: '0px 7px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                width: 'fit-content',
+                minWidth: '75px',
+                margin: '4px 7px',
             });
             
             const icon = document.createElement('img');
@@ -81,9 +112,6 @@ export class AIGenBox {
             const label = document.createElement('span');
             label.innerText = tone[0].toUpperCase() + tone.slice(1).toLowerCase();
             Object.assign(label.style, {
-                position: 'absolute',
-                top: '0px',
-                left: '0px',
                 width: '100%',
                 textAlign: 'center',
                 backgroundColor: 'white',
@@ -93,7 +121,6 @@ export class AIGenBox {
             iconContainer.appendChild(label);
             
             allIconsContainer.appendChild(iconContainer);
-            console.log(iconContainer);
         }
 
         return allIconsContainer;
