@@ -22,15 +22,20 @@ export class OpenAIClient implements AIClient {
 
     async generate_comment(post_content: string, reply_to: string | null, tone: ConversationTone| null): Promise<string> {
         const responseParams = build_prompt(post_content, reply_to, tone);
-        return "Lorem ipsum..... do not waste prompts while testing";
-        console.log(responseParams);
+        
+        // return new Promise((resolve) => {
+        //     setTimeout(() => { resolve("Lorem ipsum..... do not waste prompts while testing") }, 1000);
+        // })
+
+
+        console.debug(responseParams);
 
         const response = await this.openai.responses.create({
             model: "gpt-5-nano-2025-08-07",
             ...responseParams
         });
 
-        console.log(response);
+        console.debug(response);
 
         return response.output_text;
     }
