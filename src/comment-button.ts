@@ -3,6 +3,7 @@ import { generateComment } from './comment-generator';
 import { findPostContentElementFromChild, getReferencedCommentContentElement, getEditableCommentParagraph } from './linkedin-dom';
 import { AIGenBox } from './ai-gen-box'
 import { computePosition, autoUpdate, shift, hide } from '@floating-ui/dom';
+import { ConversationTone } from './enums';
 
 function extractTextContent(postContentElement: HTMLElement): string | null {
   return postContentElement?.innerText ?? null;
@@ -52,6 +53,9 @@ export function insertGenerateCommentButton(buttonsContainer: HTMLElement): void
 function generateCommentClickHandler(event: Event): void {
   const emojiButton = event.currentTarget as HTMLElement;
   const aiGenBox = AIGenBox.getInstance();
+  if(aiGenBox.isLoading())
+    return;
+
   if(Object.hasOwn(aiGenBox, "floatingUiCleanup")) {
     const temp = (aiGenBox as any);
     if(typeof(temp.floatingUiCleanup) === "function") {
@@ -78,7 +82,6 @@ function generateCommentClickHandler(event: Event): void {
     });
   });
   
-  //TODO: maybe is cleaner to pass the cleanup function to the hideAIGenBox function
   Object.assign(aiGenBox, {
     floatingUiCleanup: cleanup
   });
@@ -100,18 +103,22 @@ function generateCommentClickHandler(event: Event): void {
     return;
   }
 
-  // console.log("POST: ", postContentText);
-  // console.log("REF COMMENT: ", referencedCommentText);
+  aiGenBox.toneClickAction = (tone: ConversationTone) => {
+    console.debug("POST: ", postContentText); // TODO: remove `... more` at the end of the string.
+    console.debug("REF COMMENT: ", referencedCommentText);
+    
+    aiGenBox.showLoadingOverlay();
+    generateComment(postContentText, referencedCommentText).then((comment) => {
+      insertComment(emojiButton, comment);
+      aiGenBox.hideLoadingOverlay();
+      aiGenBox.hide();
+    });
+  }
 
-  //TODO: put an loading indicator while comment is being generated
-  // generateComment(postContentText, referencedCommentText).then((comment) => {
-  //   insertComment(emojiButton, comment);
-  // });
 }
 
 
 const hideAIGenBox = (event: Event) => {
-  console.log("trigger hideAIGenBox");
   const isHtmlElement = event.target instanceof HTMLElement;
   if (!isHtmlElement)
     return;
@@ -125,6 +132,9 @@ const hideAIGenBox = (event: Event) => {
     return;
 
   if (target.closest(".generate-comment-button"))
+    return;
+
+  if(AIGenBox.getInstance().isLoading())
     return;
 
   AIGenBox.getInstance().hide();

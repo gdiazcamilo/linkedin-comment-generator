@@ -3,6 +3,7 @@ import { ConversationTone } from "./enums";
 export class AIGenBox {
     private static instance : AIGenBox | null = null;
     private domElement : HTMLElement | null = null;
+    public toneClickAction : Function | null = null;
 
     private constructor() {}
 
@@ -61,6 +62,25 @@ export class AIGenBox {
                 border-color: #f7cf3db5;
                 transform: scale(1.2);
             }
+
+            .loader {
+                width: 70px;
+                height: 70px;
+                border: 7px solid #000;
+                border-top: 7px solid #fff;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+
+                to {
+                    transform: rotate(360deg);
+                }
+            }
         `;
 
         document.head.appendChild(style);
@@ -82,6 +102,43 @@ export class AIGenBox {
         return this.domElement?.style.display != 'none';
     }
 
+    showLoadingOverlay() {
+        const overlay = document.createElement('div');
+        overlay.id = 'lcg-ai-gen-box-overlay'
+        Object.assign(overlay.style, {
+            'position': 'absolute',
+            'display': 'flex',
+            'justify-content': 'center',
+            'align-items': 'center',
+            'width': '98%',
+            'height': '98%',
+            'backgroundColor': 'white',
+            'border-radius': '30px',
+            'opacity': '0.6', 
+            'zIndex': 9999,
+        });
+
+        const loader = document.createElement('div');
+        loader.classList.add('loader');
+        overlay.appendChild(loader);
+
+        this.domElement?.prepend(overlay);
+    }
+
+    hideLoadingOverlay() {
+        this.domElement?.querySelector('#lcg-ai-gen-box-overlay')?.remove();
+    }
+
+    isLoading() : Boolean {
+        return !!this.domElement?.querySelector('#lcg-ai-gen-box-overlay');
+    }
+
+    private toneClick_handler(event: Event, tone: string) {
+        if(this.toneClickAction && typeof(this.toneClickAction) === 'function') {
+            this.toneClickAction(tone);
+        }
+    }
+
     private renderConversationTonesIcons() : HTMLElement {
         const allIconsContainer = document.createElement('div');
         Object.assign(allIconsContainer.style, {
@@ -100,7 +157,9 @@ export class AIGenBox {
                 width: 'fit-content',
                 minWidth: '75px',
                 margin: '4px 7px',
+                cursor: 'pointer'
             });
+            iconContainer.onclick = (e) => { this.toneClick_handler(e, tone); };
             
             const icon = document.createElement('img');
             icon.src = chrome.runtime.getURL(`images/conversation_tones/${tone.toLowerCase()}.png`);
