@@ -61,7 +61,7 @@ function findMentionsInCurrentCommentBox(emojiButton: HTMLElement): NodeListOf<H
 function findReferencedCommentElement(emojiButton: HTMLElement): HTMLElement | null {
   const mentions = findMentionsInCurrentCommentBox(emojiButton);
   if (!mentions || mentions.length === 0) {
-    console.log('Didn\'t find any mention in the comment box');
+    console.debug('Didn\'t find any mention in the comment box');
     return null;
   }
   
@@ -87,7 +87,7 @@ function findReferencedCommentElement(emojiButton: HTMLElement): HTMLElement | n
 function getReferencedCommentContentElement(emojiButton: HTMLElement): HTMLElement | null {
   const referencedCommentElement = findReferencedCommentElement(emojiButton);
   if (!referencedCommentElement) {
-    console.log('Couldn\'t find the referenced comment element for the mention in the comment box');
+    console.debug('Couldn\'t find the referenced comment element for the mention in the comment box');
     return null;
   }
 
