@@ -14,7 +14,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["chrome"]
+    "types": ["chrome", "dom-chromium-ai"]
   },
   "include": ["src", "vite.config.ts", "src/pages/options/options.ts"]
 }
