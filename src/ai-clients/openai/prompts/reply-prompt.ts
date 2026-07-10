@@ -1,6 +1,6 @@
 import { ConversationTone } from "../../../enums";
 
-const instructions =
+export const instructions =
   "You will generate comments in response to a LinkedIn post, a reply to the post, or both. " +
   "You will receive the intention and/or tone, as well as the post content text and the reply " +
   "(if any) for which you will generate the comment. The comment must be relevant to the discussion " +
@@ -15,7 +15,12 @@ const instructions =
 
 
 
-export function build(post: string, comment: string | null, tone: ConversationTone | null): Object {
+export interface ReplyPrompt {
+    instructions: string;
+    input: string;
+}
+
+export function build(post: string, comment: string | null, tone: ConversationTone | null): ReplyPrompt {
 
     let prompt = `Write a comment in response to the following post`;
     if(comment) {

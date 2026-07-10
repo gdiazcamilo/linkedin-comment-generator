@@ -1,6 +1,8 @@
 import { AIClient } from "./ai-clients/ai-client";
 import { OpenAIClient } from "./ai-clients/openai/openai-client";
-import { ConversationTone } from "./enums";
+import { ChromeBuiltInClient } from "./ai-clients/chrome-built-in/chrome-built-in-client";
+import { AIProvider, ConversationTone } from "./enums";
+import { getAIProvider } from "./storage";
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason == chrome.runtime.OnInstalledReason.INSTALL) {
@@ -20,8 +22,9 @@ async function generateComment(_postContent: string, _referencedCommentText: str
 
 
 async function getAIClient(): Promise<AIClient> {
-  // In the future, we can add logic here to return different AI clients based on user settings (e.g. OpenAI, Claude, Gemini, etc.).
-  return await OpenAIClient.create();
+  return await getAIProvider() === AIProvider.ChromeBuiltIn
+    ? ChromeBuiltInClient.create()
+    : OpenAIClient.create();
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

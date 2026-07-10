@@ -1,6 +1,8 @@
 import { RuntimeLastError } from "../src/errors"
+import { AIProvider } from './enums';
 
 const OPEN_AI_API_KEY_NAME = 'openaiApiKey';
+const AI_PROVIDER_NAME = 'aiProvider';
 
 function saveSetting(key: string, value: any, callback?: (isSuccess: boolean, error: RuntimeLastError | null) => void): void {
     chrome.storage.local.set({ [key]: value }, () => {
@@ -29,4 +31,13 @@ export function removeOpenAIApiKey(callback?: (success: boolean, error: RuntimeL
             callback(success, error);
         }
     });
+}
+
+export function saveAIProvider(provider: AIProvider, callback?: (success: boolean, error: RuntimeLastError | null) => void): void {
+    saveSetting(AI_PROVIDER_NAME, provider, callback);
+}
+
+export async function getAIProvider(): Promise<AIProvider> {
+    const result = await chrome.storage.local.get(AI_PROVIDER_NAME);
+    return result?.aiProvider === AIProvider.ChromeBuiltIn ? AIProvider.ChromeBuiltIn : AIProvider.OpenAI;
 }

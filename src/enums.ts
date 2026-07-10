@@ -14,3 +14,8 @@ export enum ConversationTone {
     Critical,
     Bold,
 }
+
+export enum AIProvider {
+    OpenAI = 'openai',
+    ChromeBuiltIn = 'chrome-built-in',
+}

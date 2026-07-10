@@ -168,6 +168,18 @@
         background: var(--surface-muted);
       }
 
+      [hidden] { display: none !important; }
+
+      .provider-options { display: grid; gap: 10px; }
+      .provider-option {
+        display: flex; align-items: flex-start; gap: 12px; padding: 14px;
+        border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer;
+      }
+      .provider-option:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+      .provider-option input { margin-top: 3px; accent-color: var(--brand); }
+      .provider-copy { display: grid; gap: 3px; }
+      .provider-copy small { color: var(--text-muted); font-weight: 400; line-height: 1.4; }
+
       legend {
         padding: 0 8px;
         color: var(--text);
@@ -417,31 +429,46 @@
           <form id="settings-form">
             <div class="form-heading">
               <h1 id="settings-title">Settings</h1>
-              <p class="section-note">Add your OpenAI API key to enable comment generation.</p>
+              <p class="section-note">Choose the AI provider used to generate comments.</p>
             </div>
 
             <fieldset>
-              <legend>OpenAI API Key</legend>
-              <label for="openai-api-key">API key</label>
-              <div class="input-wrap">
-                <input
-                  id="openai-api-key"
-                  type="password"
-                  name="openai-api-key"
-                  placeholder="sk-..."
-                  autocomplete="off"
-                />
+              <legend>AI provider</legend>
+              <div class="provider-options">
+                <label class="provider-option">
+                  <input id="openai-provider" type="radio" name="ai-provider" checked />
+                  <span class="provider-copy">OpenAI <small>Uses your OpenAI API key.</small></span>
+                </label>
+                <label id="chrome-built-in-option" class="provider-option" hidden>
+                  <input id="chrome-built-in-provider" type="radio" name="ai-provider" />
+                  <span class="provider-copy">Chrome Built-in AI <small>Runs with the language model provided by Chrome.</small></span>
+                </label>
               </div>
-              <p class="field-help">Stored in Chrome extension storage and used only by this extension.</p>
             </fieldset>
 
-            <section id="key-status" class="key-status" aria-live="polite">
-              <div class="key-status-content">
-                <p class="key-status-label">Current key</p>
-                <p id="key-indicator" class="key-indicator">No key saved</p>
-              </div>
-              <button type="button" id="remove-key-button" hidden>Remove key</button>
-            </section>
+            <div id="chrome-built-in-settings" role="note">
+              <p>Checking built-in model availability...</p>
+              <progress hidden id="chrome-built-in-model-download" value="0" max="1"></progress>
+            </div>
+
+            <div id="openai-settings">
+              <fieldset>
+                <legend>OpenAI API Key</legend>
+                <label for="openai-api-key">API key</label>
+                <div class="input-wrap">
+                  <input id="openai-api-key" type="password" name="openai-api-key" placeholder="sk-..." autocomplete="off" />
+                </div>
+                <p class="field-help">Stored in Chrome extension storage and used only by this extension.</p>
+              </fieldset>
+
+              <section id="key-status" class="key-status" aria-live="polite">
+                <div class="key-status-content">
+                  <p class="key-status-label">Current key</p>
+                  <p id="key-indicator" class="key-indicator">No key saved</p>
+                </div>
+                <button type="button" id="remove-key-button" hidden>Remove key</button>
+              </section>
+            </div>
 
             <div class="form-actions button-row">
               <button type="button" id="save-button">Save &amp; Enable</button>
