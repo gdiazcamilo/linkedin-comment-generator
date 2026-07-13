@@ -108,6 +108,7 @@ function generateCommentClickHandler(event: Event): void {
     console.debug("REF COMMENT: ", referencedCommentText);
     
     aiGenBox.showLoadingOverlay();
+    //TODO: pass real choosen conversation tone.
     generateComment(postContentText, referencedCommentText).then((comment) => {
       insertComment(emojiButton, comment);
       aiGenBox.hideLoadingOverlay();

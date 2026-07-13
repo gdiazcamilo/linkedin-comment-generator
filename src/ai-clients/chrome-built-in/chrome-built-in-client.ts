@@ -2,35 +2,47 @@ import { getAcceptedTwoLetterLanguages } from '../../accepted-languages';
 import { ConversationTone } from '../../enums';
 import { AIClient } from '../ai-client';
 import { build } from '../openai/prompts/reply-prompt';
+import { SYSTEM_INSTRUCTIONS } from '../prompts/prompts';
 
 export type OnLanguageModelDownload = ((e: ProgressEvent<EventTarget>) => void)
 
+const ACCEPTED_LANGS = new Set(["en", "es", "de", "fr", "ja"]);
+
 export class ChromeBuiltInClient implements AIClient {
+
   private constructor(
     private readonly model: LanguageModel,
+    private readonly controller: AbortController,
   ) {}
 
   static async create(onDownloadProgress: OnLanguageModelDownload | null = null): Promise<ChromeBuiltInClient> {
     if(await getModelAvailability() !== 'available') {
       throw new Error('Chrome Built-in AI is not available at the moment. Go to the extension\'s options for more details');
     }
-    const model = await createLanguageModel(onDownloadProgress);
-    return new ChromeBuiltInClient(model);
+    
+    const controller = new AbortController();
+    const model = await createLanguageModel(onDownloadProgress, controller.signal);
+    return new ChromeBuiltInClient(model, controller);
   }
 
   async generate_comment(postContent: string, replyTo: string | null, tone: ConversationTone | null): Promise<string> {
     const prompt = build(postContent, replyTo, tone);
-    return this.model.prompt(`${prompt.instructions}\n\n${prompt.input}`);
+    const response = this.model.prompt(`${prompt.instructions}\n\n${prompt.input}`);
+    await this.model.destroy();
+    // this.controller.abort();
+    return response;
   }
 }
 
 
-export async function getModelLanguageOptions(onDownloadProgress: OnLanguageModelDownload | null = null): Promise<LanguageModelCreateOptions> {
+export async function getModelLanguageOptions(onDownloadProgress: OnLanguageModelDownload | null = null, 
+                                              signal: AbortSignal | undefined = undefined): Promise<LanguageModelCreateOptions> {
   const languages = await getAcceptedTwoLetterLanguages();
-  const langOptions = new Set([...languages, 'en'])
+  const langOptions = new Set([...languages, 'en'].filter(l => ACCEPTED_LANGS.has(l)));
   const options : LanguageModelCreateOptions = {
     expectedInputs: [ {type: 'text', languages: [...langOptions]} ],
     expectedOutputs: [ {type: 'text', languages: [...langOptions]} ],
+    signal: signal,
     monitor: (m) => {
       m.addEventListener('downloadprogress', (e) => {
         console.debug(e);
@@ -39,6 +51,12 @@ export async function getModelLanguageOptions(onDownloadProgress: OnLanguageMode
         }
       });
     },
+    initialPrompts: [
+      {
+        role: 'system',
+        content: SYSTEM_INSTRUCTIONS
+      }
+    ]
   }
   
   return options;
@@ -54,13 +72,14 @@ if (typeof LanguageModel === 'undefined') {
   return availability;
 }
 
-export async function createLanguageModel(onDownloadProgress: OnLanguageModelDownload | null = null) : Promise<LanguageModel> {
+export async function createLanguageModel(onDownloadProgress: OnLanguageModelDownload | null = null, 
+                                          signal: AbortSignal | undefined = undefined) : Promise<LanguageModel> {
   const availability = await getModelAvailability();
   if (availability === 'unavailable') {
     throw new Error('Chrome Built-in AI is not available at the moment. Go to the extension\'s options for more details.');
   }
 
-  const options = getModelLanguageOptions(onDownloadProgress);
+  const options = getModelLanguageOptions(onDownloadProgress, signal);
 
   return await LanguageModel.create(await options);
 }

@@ -1,8 +1,10 @@
 import { AIClient } from "./ai-clients/ai-client";
 import { OpenAIClient } from "./ai-clients/openai/openai-client";
-import { ChromeBuiltInClient } from "./ai-clients/chrome-built-in/chrome-built-in-client";
+import { ChromeBuiltInClient, createLanguageModel } from "./ai-clients/chrome-built-in/chrome-built-in-client";
 import { AIProvider, ConversationTone } from "./enums";
 import { getAIProvider } from "./storage";
+
+let DOWNLOAD_REQUESTED = false;
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason == chrome.runtime.OnInstalledReason.INSTALL) {
@@ -37,4 +39,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   return true;
   
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if(message.type !== "START_DOWNLOAD") return;
+  if(DOWNLOAD_REQUESTED) return;
+
+  DOWNLOAD_REQUESTED = true;
+
+  const watchDownloadStart = setInterval(() => {
+    chrome.runtime.sendMessage({
+        type: "DOWNLOAD_REQUESTED",
+    });
+  }, 1000);
+
+  
+  // trigger model download
+  createLanguageModel((e: ProgressEvent<EventTarget>) => {
+    clearInterval(watchDownloadStart);
+    chrome.runtime.sendMessage({
+      type: "DOWNLOAD_PROGRESSED",
+      loaded: e.loaded
+    });
+  }).catch((e) => { 
+    console.error(e);
+    DOWNLOAD_REQUESTED = false;
+    clearInterval(watchDownloadStart);
+   });
+
 });

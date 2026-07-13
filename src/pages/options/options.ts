@@ -122,44 +122,54 @@ saveButton?.addEventListener('click', async () => {
 
 async function downloadChromeModel() {
   const availability = await getModelAvailability();
+  updateModelAvailability(availability);
+
   if(availability === 'downloadable') {
+    console.log('navigator.userActivation.isActive = ', navigator.userActivation.isActive);
+
     if(navigator.userActivation.isActive) {
-      updateModelAvailability(availability);
-      // trigger model download
-      createLanguageModel((e: ProgressEvent<EventTarget>) => {
-        updateBuiltInProgress(e.loaded)
-      }); 
-      
+      chrome.runtime.sendMessage({
+        type: "START_DOWNLOAD",
+      });
+      updateDownloadInfo("Downloaded request. It might take a minute to start...", {hideProgressPanel: false});
     }
   }
 }
 
 function updateModelAvailability(availability: string) {
   // TODO: define an enum for availability statuses and replace the scattered strings.
-  const paragraph = builtInSettings.querySelector("p") as HTMLParagraphElement
-  const progress = builtInSettings.querySelector("#chrome-built-in-model-download") as HTMLProgressElement;
   if(availability === 'available') {
-    paragraph.textContent = "Model is ready";
-    progress.hidden = true;
+    updateDownloadInfo("Model is ready", {hideProgressPanel: true});
   }
   else if (availability === 'unavailable') {
-    paragraph.textContent = "Model is not available";
-    progress.hidden = true;
+    updateDownloadInfo("Model is not available", {hideProgressPanel: true});
   }
   else if (availability === 'downloadable') {
-    paragraph.textContent = "Model is available for download";
-    progress.hidden = true;
+    updateDownloadInfo("Model is available for download", {hideProgressPanel: true});
   }
   else if (availability === 'downloading') {
-    paragraph.textContent = "Model is downloading";
-    progress.hidden = false;
+    updateDownloadInfo("Model is downloading", {hideProgressPanel: false});
   }
 }
 
+function updateDownloadInfo(msg: string, {hideProgressPanel = true} = {}) {
+  const paragraph = builtInSettings.querySelector("p") as HTMLParagraphElement
+  const progressInfoPanel = builtInSettings.querySelector(".progress-container") as HTMLDivElement;
+  
+  paragraph.textContent = msg;
+  progressInfoPanel.hidden = hideProgressPanel
+}
+
 function updateBuiltInProgress(progressValue: number) {
-  const progress = builtInSettings.querySelector("#chrome-built-in-model-download") as HTMLProgressElement;
+  const progress = builtInSettings.querySelector(".progress-container progress") as HTMLProgressElement;
+  const progressLabel = builtInSettings.querySelector(".progress-container .current-progress-num") as HTMLSpanElement;
   progress.hidden = false;
   progress.value = progressValue;
+  progressLabel.textContent = (progressValue * 100).toFixed(2).toString() + "%";
+
+  if(progressValue === 1) {
+    getModelAvailability().then(availability => updateModelAvailability(availability));
+  }
 }
 
 removeButton?.addEventListener('click', () => {
@@ -176,3 +186,24 @@ removeButton?.addEventListener('click', () => {
 providerInputs.forEach((input) => input.addEventListener('change', renderProviderSettings));
 
 void Promise.all([renderCurrentKey(), initializeProviders()]);
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if(["DOWNLOAD_REQUESTED", "DOWNLOAD_PROGRESSED"].includes(message.type) === false) return;
+
+  if(message.type === "DOWNLOAD_REQUESTED") {
+    for(let i=1; i<=5; i++) {
+      setTimeout(() => {
+        const dots = ".".padEnd(i, ".");
+        updateDownloadInfo("Waiting for download to start." + dots, {hideProgressPanel: false});
+      }, 200 + (100 * i));
+    }
+  }
+  else if(message.type === "DOWNLOAD_PROGRESSED") {
+    updateModelAvailability('downloading')
+    updateBuiltInProgress(message.loaded);
+  }
+
+  return true;
+  
+});

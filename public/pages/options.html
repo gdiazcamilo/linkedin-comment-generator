@@ -404,6 +404,16 @@
           flex-direction: column;
         }
       }
+
+      .progress-container {
+        display: flex;
+        align-items: center;
+      }
+
+      .progress-container progress {
+        height: 30px;
+        margin-right: 7px;
+      }
     </style>
   </head>
   <body>
@@ -448,7 +458,12 @@
 
             <div id="chrome-built-in-settings" role="note">
               <p>Checking built-in model availability...</p>
-              <progress hidden id="chrome-built-in-model-download" value="0" max="1"></progress>
+              <div class="progress-container" hidden>
+                <progress value="0" max="1"></progress>
+                <span>
+                  <span class="current-progress-num"></span>
+                </span>
+              </div>
             </div>
 
             <div id="openai-settings">

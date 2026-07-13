@@ -1,12 +1,7 @@
-import { ConversationTone } from "../../../enums";
-import { specify_tone, SYSTEM_INSTRUCTIONS } from "../../prompts/prompts";
+import { ConversationTone } from "../../enums";
+import { specify_tone } from "../prompts/prompts";
 
-export interface ReplyPrompt {
-    instructions: string;
-    input: string;
-}
-
-export function build(post: string, comment: string | null, tone: ConversationTone | null): ReplyPrompt {
+export function build(post: string, comment: string | null, tone: ConversationTone | null): string {
 
     let prompt = `Write a comment in response to the following post`;
     if(comment) {
@@ -29,10 +24,6 @@ export function build(post: string, comment: string | null, tone: ConversationTo
     prompt += `
     ${tone_prompt}`
 
-    return {
-        instructions: SYSTEM_INSTRUCTIONS,
-        input: prompt
-    };
-
+    return prompt;
 }
 
