@@ -1,8 +1,9 @@
 import { getAcceptedTwoLetterLanguages } from '../../accepted-languages';
 import { ConversationTone } from '../../enums';
 import { AIClient } from '../ai-client';
-import { build } from '../openai/prompts/reply-prompt';
+
 import { SYSTEM_INSTRUCTIONS } from '../prompts/prompts';
+import { build } from './reply-prompts';
 
 export type OnLanguageModelDownload = ((e: ProgressEvent<EventTarget>) => void)
 
