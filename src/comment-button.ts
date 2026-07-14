@@ -1,9 +1,10 @@
 
-import { generateComment } from './comment-generator';
+import { generateComment, generateCommentStream } from './comment-generator';
 import { findPostContentElementFromChild, getReferencedCommentContentElement, getEditableCommentParagraph } from './linkedin-dom';
 import { AIGenBox } from './ai-gen-box'
 import { computePosition, autoUpdate, shift, hide } from '@floating-ui/dom';
-import { ConversationTone } from './enums';
+import { AIProvider, ConversationTone } from './enums';
+import { getAIProvider } from './storage';
 
 function extractTextContent(postContentElement: HTMLElement): string | null {
   return postContentElement?.innerText ?? null;
@@ -17,7 +18,7 @@ function insertComment(emojiButton: HTMLElement, commentText: string): boolean {
     return false;
   }
 
-  paragraph.append(commentText);
+  paragraph.textContent = commentText;
   return true;
 }
 
@@ -103,17 +104,52 @@ function generateCommentClickHandler(event: Event): void {
     return;
   }
 
-  aiGenBox.toneClickAction = (tone: ConversationTone) => {
+  aiGenBox.toneClickAction = async (tone: ConversationTone) => {
     console.debug("POST: ", postContentText); // TODO: remove `... more` at the end of the string.
     console.debug("REF COMMENT: ", referencedCommentText);
     
     aiGenBox.showLoadingOverlay();
-    //TODO: pass real choosen conversation tone.
-    generateComment(postContentText, referencedCommentText).then((comment) => {
-      insertComment(emojiButton, comment);
+
+    try {
+      // insert a whitespace to force linked to render the actual paragraph where the comment will be inserted.
+      insertComment(emojiButton, "...");
+
+      setTimeout(() => {
+        
+      }, 200);
+  
+      if(await getAIProvider() == AIProvider.ChromeBuiltIn) {
+        const stream = await generateCommentStream(postContentText, referencedCommentText, tone);
+        const paragraph = getEditableCommentParagraph(emojiButton) as HTMLParagraphElement;
+        console.log(paragraph);
+        let first = true;
+        for await( const chunk of stream) {
+          console.log(chunk);
+          if(first) {
+            paragraph.textContent = chunk
+            aiGenBox.hideLoadingOverlay();
+            aiGenBox.hide();
+            first = false
+          }
+          else
+            paragraph.append(chunk);
+        }
+      }
+      else {
+        generateComment(postContentText, referencedCommentText, tone).then((comment) => {
+          insertComment(emojiButton, comment);
+          aiGenBox.hideLoadingOverlay();
+          aiGenBox.hide();
+        });
+  
+      }
+
+    }
+    finally {
       aiGenBox.hideLoadingOverlay();
       aiGenBox.hide();
-    });
+    }
+
   }
 
 }
@@ -143,3 +179,5 @@ const hideAIGenBox = (event: Event) => {
   document.removeEventListener('click', hideAIGenBox);
 
 }
+
+

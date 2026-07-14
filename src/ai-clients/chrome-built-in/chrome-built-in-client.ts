@@ -28,10 +28,17 @@ export class ChromeBuiltInClient implements AIClient {
 
   async generate_comment(postContent: string, replyTo: string | null, tone: ConversationTone | null): Promise<string> {
     const prompt = build(postContent, replyTo, tone);
-    const response = this.model.prompt(`${prompt.instructions}\n\n${prompt.input}`);
+    const response = await this.model.prompt(prompt);
     await this.model.destroy();
     // this.controller.abort();
     return response;
+  }
+
+  generate_comment_stream(postContent: string, replyTo: string | null, tone: ConversationTone | null): ReadableStream<string> {
+    const prompt = build(postContent, replyTo, tone);
+    const stream = this.model.promptStreaming(prompt);
+    // await this.model.destroy();
+    return stream;
   }
 }
 

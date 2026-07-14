@@ -19,7 +19,14 @@ chrome.action.onClicked.addListener(() => {
 
 async function generateComment(_postContent: string, _referencedCommentText: string | null, tone: ConversationTone | null): Promise<string> {
   const aiClient = await getAIClient();
+  console.debug("Using model", aiClient);
   return await aiClient.generate_comment(_postContent, _referencedCommentText, tone);
+}
+
+async function generateCommentStream(_postContent: string, _referencedCommentText: string | null, tone: ConversationTone | null): Promise<ReadableStream<string>> {
+  const aiClient = await getAIClient();
+  console.debug("Using model", aiClient);
+  return aiClient.generate_comment_stream(_postContent, _referencedCommentText, tone);
 }
 
 
@@ -30,6 +37,22 @@ async function getAIClient(): Promise<AIClient> {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if(message.type !== "SUGGEST_COMMENT_STREAM") return;
+  
+  const uid = message.uid;
+  generateCommentStream(message.postContentText, message.referencedCommentText, message.tone).then(async (stream) => {
+    for await(const chunk of stream) {
+      console.log(chunk);
+      chrome.runtime.sendMessage({
+        type: "SUGGEST_COMMENT_CHUNK_RECEIVED",
+        chunk,
+        uid,
+      });
+    }
+  });
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if(message.type !== "SUGGEST_COMMENT") return;
 
   //TODO: handle error when generating message.
@@ -38,7 +61,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   });
 
   return true;
-  
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

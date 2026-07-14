@@ -40,5 +40,9 @@ export class OpenAIClient implements AIClient {
         return response.output_text;
     }
 
+    generate_comment_stream(post_content: string, reply_to: string | null, tone: ConversationTone | null): ReadableStream<string> {
+        throw new Error("Not implemented");
+    }
+
 }
 

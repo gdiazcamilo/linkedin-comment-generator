@@ -23,8 +23,9 @@ export function build(post: string, comment: string | null, tone: ConversationTo
         # Post's reply
         \`\`\`${comment}\`\`\``
     }
-
+    console.log("build tone ", tone);
     const tone_prompt = specify_tone(tone || ConversationTone.Professional);
+    console.log("tone prompt ", tone_prompt);
 
     prompt += `
     ${tone_prompt}`
