@@ -34,6 +34,7 @@ export class AIGenBox {
             position: 'absolute',
             display: 'none',
             maxWidth: '65vw',
+            width: '639px', // fit 7 tones: calculate tone width + h margin + this container div h padding
             zIndex: 999,
             top: '0px',
             left: '0px',
@@ -155,11 +156,13 @@ export class AIGenBox {
                 flexDirection: 'column',
                 alignItems: 'center',
                 width: 'fit-content',
+                maxWidth: '75px',
                 minWidth: '75px',
                 margin: '4px 7px',
                 cursor: 'pointer'
             });
-            iconContainer.onclick = (e) => { this.toneClick_handler(e, tone); };
+            const enumTone = tone as any;
+            iconContainer.onclick = (e) => { this.toneClick_handler(e, ConversationTone[enumTone]); };
             
             const icon = document.createElement('img');
             icon.src = chrome.runtime.getURL(`images/conversation_tones/${tone.toLowerCase()}.png`);
