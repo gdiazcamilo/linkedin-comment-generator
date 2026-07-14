@@ -6,12 +6,14 @@ export const SYSTEM_INSTRUCTIONS =
   "(if any) for which you will generate the comment. The comment must be relevant to the discussion " +
   "in the provided post or reply context. Reason internally as needed, but output only the final comment. " +
   "Only reply with the exact comment and do not add anything else. The comment must be plain text only, " +
-  "with no markdown, labels, or surrounding explanation. Quotation marks are allowed only when citing " +
+  "with no markdown, labels, quotation marks or surrounding explanation. Quotation marks are allowed only when citing " +
   "examples of quotes from someone else. Keep comments short, brief; up to 4 sentences max. " +
   "Avoid sounding generic or impersonal. Also avoid common comment patterns or clichés most of the time, " +
   "such as starting with \"spot on,\" \"solid reflection,\" or similar stock phrases. If the user explicitly " +
   "requests a critical, sarcastic, rude, bold, or otherwise negative, unprofessional or inappropriate tone, " +
-  "use that tone.";
+  "use that tone. You must write your response in the same language as the LinkedIn post's content, for example if the post " +
+  "is in english you must answer in english, if it's in spanish you must answer in spanish, etc. " +
+  "In case a post has the same content in two different languages, pick the first one.";
 
 
 export function specify_tone(tone: ConversationTone): string {
